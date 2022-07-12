@@ -6,6 +6,10 @@ import { ConfigModule } from '@nestjs/config';
 import configurations from './config/config';
 import { configSchemaValidation } from './config/config.schema';
 import { DatabaseModule } from './modules/database/database.module';
+import { UserModule } from './modules/user/user.module';
+import { AuthModule } from './modules/auth/auth.module';
+import { APP_GUARD } from '@nestjs/core';
+import { JwtAuthGuard } from './modules/auth/guards/jwt.guard';
 
 @Module({
   imports: [
@@ -14,8 +18,15 @@ import { DatabaseModule } from './modules/database/database.module';
       validationSchema: configSchemaValidation,
     }),
     DatabaseModule,
+    AuthModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
+  ],
 })
 export class AppModule {}
