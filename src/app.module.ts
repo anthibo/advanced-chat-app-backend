@@ -10,6 +10,7 @@ import { UserModule } from './modules/user/user.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './modules/auth/guards/jwt.guard';
+import { ChatModule } from './modules/chat/chat.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { JwtAuthGuard } from './modules/auth/guards/jwt.guard';
     }),
     DatabaseModule,
     AuthModule,
+    ChatModule,
   ],
   controllers: [AppController],
   providers: [
