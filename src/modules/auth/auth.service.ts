@@ -10,9 +10,9 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
   async login(credentials: UserInputDTO) {
-    const user = await this.userService.findOne(credentials.username);
+    const user = await this.userService.getUserByUserName(credentials.username);
     if (!user) throw new HttpException('wrong username or password', 403);
-    const isValid = user.comparePassword(credentials.password);
+    const isValid = await user.comparePassword(credentials.password);
     if (!isValid) throw new HttpException('wrong username or password', 403);
     const payload = { id: user.id, username: user.username };
     const accessToken = this.jwtService.sign(payload);

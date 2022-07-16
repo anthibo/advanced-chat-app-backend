@@ -25,8 +25,14 @@ export class UserService {
     return user === null;
   }
 
-  async findOne(username: string): Promise<User> {
+  async getUserByUserName(username: string): Promise<User> {
     const user = await this.userRepository.findOne({ username });
+    return user;
+  }
+  async getUserById(id: number): Promise<User> {
+    const user = await this.userRepository.findOne(id, {
+      select: ['id', 'username'],
+    });
     return user;
   }
 }

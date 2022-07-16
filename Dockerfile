@@ -4,4 +4,5 @@ WORKDIR /usr/src/app
 COPY package*.json ./
 COPY . .
 RUN yarn
+RUN yarn migration:run
 RUN yarn start
