@@ -1,3 +1,4 @@
+import { InjectQueue } from '@nestjs/bull';
 import {
   ConnectedSocket,
   MessageBody,
@@ -7,15 +8,23 @@ import {
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
+import { Queue } from 'bull';
 import { Server } from 'http';
 import { Socket } from 'socket.io';
+import {
+  CreateChatRoomDTO,
+  SendMessageBodyDTO,
+} from '../message/dto/message.dto';
 import { RoomService } from '../room/room.service';
 
 @WebSocketGateway({ transports: ['websocket'] })
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
-  constructor(private readonly roomService: RoomService) {}
+  constructor(
+    private readonly roomService: RoomService,
+    @InjectQueue('messages-queue') private readonly messagesQueue: Queue,
+  ) {}
   handleConnection(client: Socket) {
     console.log(client.handshake.auth);
     const username = client.handshake.auth.username;
@@ -31,20 +40,20 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('send message')
   handleNewMessage(
     @ConnectedSocket() socket: Socket,
-    @MessageBody() message: { roomName: string; message: string; time: string },
+    @MessageBody() messageBody: SendMessageBodyDTO,
   ) {
-    console.log(message.message);
-    socket.to(message.roomName).emit('new message', {
+    console.log(messageBody.message);
+    socket.to(messageBody.roomName).emit('new message', {
       from: socket.handshake.auth.username,
-      message: message.message,
-      time: message.time,
+      message: messageBody.message,
+      time: messageBody.time,
     });
   }
 
   @SubscribeMessage('create private chat room')
   async createPrivateChatRoom(
     @ConnectedSocket() socket: Socket,
-    @MessageBody() message: { to: string; message: string },
+    @MessageBody() message: CreateChatRoomDTO,
   ) {
     // create a new room and persist users in db
     // join to the new created room

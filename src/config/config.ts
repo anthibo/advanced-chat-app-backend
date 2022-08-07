@@ -13,5 +13,7 @@ export default () => ({
   },
   redis: {
     url: process.env.REDIS_URL,
+    port: process.env.REDIS_PORT,
+    host: process.env.REDIS_HOST,
   },
 });
