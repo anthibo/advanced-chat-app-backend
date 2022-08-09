@@ -1,10 +1,10 @@
 import { Processor, Process } from '@nestjs/bull';
 import { Job } from 'bull';
-import { CreateMessageDTO } from './dto/message.dto';
-import { MessageService } from './message.service';
+import { CreateMessageDTO } from '../dto/message.dto';
+import { MessageService } from '../message.service';
 
 @Processor('messages-queue')
-export class MessageConsumerService {
+export class MessageProcessor {
   constructor(private readonly messageService: MessageService) {}
   @Process('save-message')
   async saveMessage(job: Job<CreateMessageDTO>) {

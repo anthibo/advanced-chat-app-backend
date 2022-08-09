@@ -7,7 +7,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Message } from './entities/message.entity';
 import { Room } from '../room/entities/chat-room.entity';
 import { User } from '../user/user.entity';
-import { MessageConsumerService } from './message.consumer.service';
+import { MessageProcessor } from './queue/message.processor.service';
+import { MessageProducer } from './queue/message.producer.service';
 
 @Module({
   imports: [
@@ -27,7 +28,7 @@ import { MessageConsumerService } from './message.consumer.service';
     }),
   ],
   controllers: [MessageController],
-  providers: [MessageService, MessageConsumerService],
-  exports: [MessageConsumerService],
+  providers: [MessageService, MessageProcessor, MessageProducer],
+  exports: [MessageService, MessageProcessor, MessageProducer],
 })
 export class MessageModule {}

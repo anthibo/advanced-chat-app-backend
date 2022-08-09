@@ -1,4 +1,3 @@
-import { InjectQueue } from '@nestjs/bull';
 import {
   ConnectedSocket,
   MessageBody,
@@ -8,13 +7,13 @@ import {
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
-import { Queue } from 'bull';
 import { Server } from 'http';
 import { Socket } from 'socket.io';
 import {
   CreateChatRoomDTO,
   SendMessageBodyDTO,
 } from '../message/dto/message.dto';
+import { MessageProducer } from '../message/queue/message.producer.service';
 import { RoomService } from '../room/room.service';
 
 @WebSocketGateway({ transports: ['websocket'] })
@@ -23,7 +22,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   server: Server;
   constructor(
     private readonly roomService: RoomService,
-    @InjectQueue('messages-queue') private readonly messagesQueue: Queue,
+    private readonly messageProducer: MessageProducer,
   ) {}
   handleConnection(client: Socket) {
     console.log(client.handshake.auth);
@@ -38,15 +37,22 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('send message')
-  handleNewMessage(
+  async handleNewMessage(
     @ConnectedSocket() socket: Socket,
     @MessageBody() messageBody: SendMessageBodyDTO,
   ) {
-    console.log(messageBody.message);
-    socket.to(messageBody.roomName).emit('new message', {
-      from: socket.handshake.auth.username,
-      message: messageBody.message,
-      time: messageBody.time,
+    const { message, time, roomName } = messageBody;
+    const username = socket.handshake.auth.username;
+    socket.to(roomName).emit('new message', {
+      from: username,
+      message: message,
+      time: time,
+    });
+    await this.messageProducer.addToSaveMessageJob({
+      from: username,
+      message,
+      roomName,
+      time,
     });
   }
 
@@ -85,9 +91,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() roomName: string,
   ) {
     // load missed messages from cache after u join the room
+    const username = socket.handshake.auth.username;
     socket.join(roomName);
-    console.log(
-      `user ${socket.handshake.auth.username} joined room ${roomName}`,
-    );
+    socket.to(roomName).emit('load messages', `welcome ${username}`);
+    console.log(`user ${username} joined room ${roomName}`);
   }
 }

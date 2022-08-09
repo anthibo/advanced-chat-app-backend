@@ -1,5 +1,7 @@
+import { InjectQueue } from '@nestjs/bull';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Queue } from 'bull';
 import { Repository } from 'typeorm';
 import { Room } from '../room/entities/chat-room.entity';
 import { User } from '../user/user.entity';
@@ -15,6 +17,7 @@ export class MessageService {
     private readonly userRepository: Repository<User>,
     @InjectRepository(Room)
     private readonly roomRepository: Repository<Room>,
+    @InjectQueue('messages-queue') private readonly messagesQueue: Queue,
   ) {}
   async saveMessage(createMessageDto: CreateMessageDTO) {
     // save message in db and elasticsearch
