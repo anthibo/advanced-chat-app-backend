@@ -13,7 +13,6 @@ export const configSchemaValidation = Joi.object({
     username: Joi.string().required(),
   },
   redis: {
-    host: Joi.string().required(),
-    port: Joi.string().required(),
+    url: Joi.string().required(),
   },
 });

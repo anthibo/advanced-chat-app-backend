@@ -12,7 +12,8 @@ export default () => ({
     synchronize: false,
   },
   redis: {
-    host: process.env.REDIS_HOST,
+    url: process.env.REDIS_URL,
     port: process.env.REDIS_PORT,
+    host: process.env.REDIS_HOST,
   },
 });
